@@ -144,9 +144,11 @@ def cmd_send():
         return
 
     if options.Fee is not None:
-        safe_fee = sanitize_number(options.Fee, _type=int)
+        mojos = sanitize_number(options.Fee)
+        safe_fee = str(int(mojos)*1e-12)
     elif options.fee is not None:
-        safe_fee = str(int(float(sanitize_number(options.fee))*1e12))
+        safe_fee = sanitize_number(options.fee)
+        mojos = str(int(float(safe_fee)*1e12))
     else:
         safe_fee = '0'
     if options.amount is None:
@@ -191,7 +193,7 @@ def cmd_send():
         #f"and your current balance is: 10 AIR"
         "\n"
         f"Please confirm, send {safe_amount} XCH to {name},\n"
-        f"with{memo_txt} network transaction fee of {safe_fee} mojos? (Y/n)"
+        f"with{memo_txt} network transaction fee of {mojos} mojos? (Y/n)"
     )
     if input() in ('Y', 'Yes', 'yes', 'y'):
         cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
