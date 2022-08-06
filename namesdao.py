@@ -40,10 +40,10 @@ def sanitize_address(address):
         return address
 
 
-def sanitize_number(number):
+def sanitize_number(number, _type=float):
     '''Turn input that's supposed to be a number into a number, or give error. '''
     try:
-        num = float(number)
+        num = _type(number)
     except:
         return
     return number
@@ -107,13 +107,28 @@ def cmd_send():
     '''send command: Send XCH to the address that corresponds to the Namesdao name'''
 
     parser = OptionParser()
-    parser.add_option('-a', '--amount')
-    parser.add_option('-e', '--memo')
-    parser.add_option('-m', '--fee')
-    parser.add_option('-M', '--Fee')
-    parser.add_option('-y', '--yes', action="store_true")
-    parser.add_option('-h', '--help', action="store_true")
-    options, args = parser.parse_args(sys.argv[2:])
+    parser.add_option(
+        '-a', '--amount',
+        help='How much chia to send, in XCH  [required]',
+    )
+    parser.add_option(
+        '-e', '--memo',
+        help='Additional memo for the transaction',
+    )
+    parser.add_option(
+        '-m', '--fee',
+        help='Set the fees for the transaction, in XCH',
+    )
+    parser.add_option(
+        '-M', '--Fee',
+        help='Set the fees for the transaction, in mojos [takes precedence over --fee]',
+    )
+    parser.add_option(
+        '-y', '--yes',
+        action='store_true',
+        help='Execute without asking for confirmation',
+    )
+    options, args = parser.parse_args(sys.argv[3:])
 
     if options.help:
         display_help()
@@ -126,15 +141,16 @@ def cmd_send():
         display_help()
         return
     address = resolve(name)
-    if options.fee is None and options.Fee is None:
-        print('--fee in XCH or --Fee in mojos are required')
-        display_help()
-        return
     if options.amount is None:
         print('--amount in XCH is required') # TODO: Amount in XCH or mojos? Same for fee.
         display_help()
         return
-    safe_fee = sanitize_number(options.Fee or options.fee) # TODO: Convert Fee to int?
+    if options.Fee is not None:
+        safe_fee = sanitize_number(options.Fee, _type=int)
+    elif options.fee is not None:
+        safe_fee = str(int(float(sanitize_number(options.fee))*1e12))
+    else:
+        safe_fee = '1'
     safe_amount = sanitize_number(options.amount)
     safe_address = sanitize_address(address)
     if options.fee is not None and safe_fee is None:
@@ -185,7 +201,7 @@ def cmd_resolve():
     '''
 
     parser = OptionParser()
-    options, args = parser.parse_args(sys.argv[2:])
+    options, args = parser.parse_args(sys.argv[3:])
     try:
         name = args[0]
     except IndexError:
@@ -216,14 +232,23 @@ def display_help():
         "  -e, --memo TEXT                 Additional memo for the transaction\n"
         "  -m, --fee TEXT                  Set the fees for the transaction, in XCH\n"
         "  -M, --Fee TEXT                  Set the fees for the transaction, in mojos [takes precedence over --fee]\n"
+        "  -y, --yes                       Execute without asking for confirmation\n"
         "  -h, --help                      Show this message and exit.\n"
     )
 
 # processing starts here
 def main():
     try:
+        if sys.argv[1] != 'wallet':
+            display_help()
+            return
+    except IndexError:
+        display_help()
+        return
+
+    try:
         # see if we have a clear "send" or "resolve" command on the command line, if so proceed
-        cmd = cmd_dict[sys.argv[1]] # TODO test change of [1] to [2]
+        cmd = cmd_dict[sys.argv[2]] # TODO test change of [1] to [2]
     except KeyError:
         display_help()
         return
