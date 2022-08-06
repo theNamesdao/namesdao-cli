@@ -134,17 +134,16 @@ def cmd_send():
         display_help()
         return
     address = resolve(name)
-    if options.amount is None:
-        print('--amount in XCH is required') # TODO: Amount in XCH or mojos? Same for fee.
-        display_help()
-        return
     if options.Fee is not None:
         safe_fee = sanitize_number(options.Fee, _type=int)
     elif options.fee is not None:
         safe_fee = str(int(float(sanitize_number(options.fee))*1e12))
     else:
         safe_fee = '1'
-    safe_amount = sanitize_number(options.amount)
+    if options.amount is None:
+        safe_amount = '0.000000000001'
+    else:
+        safe_amount = sanitize_number(options.amount)
     safe_address = sanitize_address(address)
     if options.fee is not None and safe_fee is None:
         if options.Fee is not None:
