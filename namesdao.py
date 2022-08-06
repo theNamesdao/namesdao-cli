@@ -62,7 +62,7 @@ def resolve(name):
             name = name[:-len(suffix)]
 
     # This is the URL from which the resolving data will be downloaded.
-    url = f'https://lookup.namesdao.org/{name}.json'
+    url = f'https://storage1.xchstorage.cyou/names_lookup/{name}.json'
 
     try:
         request = Request(
@@ -75,7 +75,7 @@ def resolve(name):
         response = urlopen(request)
     except HTTPError as err:
         code = err.getcode()
-        if code == 404:
+        if code in (403, 404):
             print('We don\'t currently have this address registered in our cache.')
         else:
             print('An error occurred while trying to resolve. Please try again.')
