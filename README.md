@@ -1,6 +1,6 @@
 # Namesdao
 
-Send XCH to a name. Find out more at [Namesdao.org](https://namesdao.org).
+Send XCH to a Namesdao .xch name. Find out more at [Namesdao.org](https://www.namesdao.org).
 
 ## Usage
 
@@ -23,3 +23,22 @@ Options:
 ## Requirements
 
 Only [Python 3](https://www.python.org/downloads/) is required.
+
+## Troubleshooting
+
+You can fix the following warning message:
+
+```
+/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.11) or chardet (3.0.4) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+```
+
+by running:
+
+```
+$ pip3 install --upgrade requests
+```
+
+## License
+
+MIT Licence. See LICENSE for details.

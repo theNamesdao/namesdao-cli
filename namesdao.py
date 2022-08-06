@@ -18,6 +18,7 @@
           -e, --memo TEXT                 Additional memo for the transaction
           -m, --fee TEXT                  Set the fees for the transaction, in XCH [required]
           -M, --Fee TEXT                  Set the fees for the transaction, in mojos [takes precedence over --fee]
+          -y, --yes                       Execute without asking for confirmation
           -h, --help                      Show this message and exit.
 '''
 #
