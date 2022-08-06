@@ -30,9 +30,9 @@ import json
 import re
 import shlex
 from urllib.request import urlopen, Request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 import subprocess
-
+import time
 
 
 def sanitize_address(address):
@@ -41,13 +41,22 @@ def sanitize_address(address):
         return address
 
 
-def sanitize_number(number, _type=float):
-    '''Turn input that's supposed to be a number into a number, or give error. '''
+def sanitize_number(number):
+    '''Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. '''
     try:
-        num = _type(number)
+        num = int(number)
     except:
         return
     return number
+
+
+def sanitize_number12dec(number):
+    '''Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. '''
+    try:
+        num = float(number)
+    except:
+        return
+    return f'{num:.12f}'
 
 
 def resolve(name):
@@ -65,20 +74,31 @@ def resolve(name):
     # This is the URL from which the resolving data will be downloaded.
     url = f'https://storage1.xchstorage.cyou/names_lookup/{name}.json'
 
-    try:
-        request = Request(
-            url,
-            data=None,
-        )
-        response = urlopen(request)
-    except HTTPError as err:
-        code = err.getcode()
-        if code in (403, 404):
-            print('We don\'t currently have this address registered in our cache.')
-        else:
-            print('An error occurred while trying to resolve. Please try again.')
-            print(f'Error was: {err}')
-        return
+    retries = 3
+    while retries > 0:
+        try:
+            request = Request(
+                url,
+                data=None,
+            )
+            response = urlopen(request)
+        except HTTPError as err:
+            code = err.getcode()
+            if code in (403, 404):
+                print('We don\'t currently have this address registered in our cache.')
+            else:
+                print('An error occurred while trying to resolve. Please try again.')
+                print(f'Error was: {err}')
+            return
+        except URLError:
+            retries -= 0
+            if retries <= 0:
+                print('An error occurred while trying to resolve. Please check your network connection and try again.')
+                break
+            else:
+                time.sleep(1)
+            continue
+        break
 
     data = json.loads(response.read().decode('utf-8'))
     return data['address']
@@ -145,16 +165,27 @@ def cmd_send():
 
     if options.Fee is not None:
         mojos = sanitize_number(options.Fee)
-        safe_fee = str(int(mojos)*1e-12)
+        if mojos is None:
+            safe_fee = None
+        else:
+            safe_fee = str(int(mojos)*1e-12)
     elif options.fee is not None:
-        safe_fee = sanitize_number(options.fee)
-        mojos = str(int(float(safe_fee)*1e12))
+        safe_fee = sanitize_number12dec(options.fee)
+        if safe_fee is None:
+            mojos = None
+        else:
+            mojos = str(int(float(safe_fee)*1e12))
     else:
         safe_fee = '0'
     if options.amount is None:
         safe_amount = '0.000000000001'
     else:
-        safe_amount = sanitize_number(options.amount)
+        safe_amount = sanitize_number12dec(options.amount)
+
+    if float(safe_amount) == 0:
+        print('Please provide an amount higher than 0.000000000001 (10^-12) XCH')
+        return
+
     safe_address = sanitize_address(address)
     if options.fee is not None and safe_fee is None:
         if options.Fee is not None:
@@ -162,6 +193,7 @@ def cmd_send():
         else:
             print('Please use a number to indicate the network transaction fee (in XCH)')
         return
+
     if safe_amount is None:
         print('Please use a number to indicate the amount of XCH to send')
         return
