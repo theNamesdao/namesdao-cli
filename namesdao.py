@@ -83,21 +83,26 @@ def resolve(name):
     return data['address']
 
 def cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo):
-    subprocess.run(
-        [
-            'chia',
-            'wallet',
-            'send',
-            '-t',
-            safe_address,
-            '-a',
-            safe_amount,
-            '-m',
-            safe_fee,
+    cmd = [
+        'chia',
+        'wallet',
+        'send',
+        '-t',
+        safe_address,
+        '-a',
+        safe_amount,
+        '-m',
+        safe_fee,
+        '--override',
+    ]
+
+    if safe_memo is not None:
+        cmd.extend([
             '-e',
             safe_memo,
-        ]
-    )
+        ])
+
+    subprocess.run(cmd)
 
 
 def cmd_send():
@@ -134,12 +139,15 @@ def cmd_send():
         display_help()
         return
     address = resolve(name)
+    if address is None:
+        return
+
     if options.Fee is not None:
         safe_fee = sanitize_number(options.Fee, _type=int)
     elif options.fee is not None:
         safe_fee = str(int(float(sanitize_number(options.fee))*1e12))
     else:
-        safe_fee = '1'
+        safe_fee = '0'
     if options.amount is None:
         safe_amount = '0.000000000001'
     else:
@@ -184,7 +192,8 @@ def cmd_send():
         f"Please confirm, send {safe_amount} XCH to {name},\n"
         f"with{memo_txt} network transaction fee of {safe_fee} mojos? (Y/n)"
     )
-    cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
+    if input() in ('Y', 'Yes', 'yes', 'y'):
+        cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
 
 def cmd_resolve():
     '''resolve command: Show the XCH address for the given Namesdao name.
