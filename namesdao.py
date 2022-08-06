@@ -176,7 +176,7 @@ def cmd_send():
         else:
             mojos = str(int(float(safe_fee)*1e12))
     else:
-        safe_fee = '0'
+        mojos = safe_fee = '0'
     if options.amount is None:
         safe_amount = '0.000000000001'
     else:
