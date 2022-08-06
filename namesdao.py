@@ -127,10 +127,6 @@ def cmd_send():
     )
     options, args = parser.parse_args(sys.argv[3:])
 
-    if options.help:
-        display_help()
-        return
-
     try:
         name = args[0]
     except IndexError:
