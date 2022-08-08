@@ -1,6 +1,20 @@
-# Namesdao-resolver
+# Namesdao-cli
 #  Sample imlementation of using the Namesdao secondary cache to resolve Namesdao names for sending XCH
 #   to a Namesdao .xch wallet
+#
+# Organization: Namedao, https://www.namesdao.org/
+#
+# Note: This is only a sample implementation using the secondary cache, which is not updated reliably. Wallets and Infrastructure Providers should
+# index the primary storage on the Chia Blockchain, per NDIP-0001
+#
+# TODOs:
+#  check with primary record (on chia blockchain) to confirm before sending
+#  add pytest unit tests
+#  rename mojos variable, doh
+#  set default fee to 1 mojo
+#
+# contact @theNamesdao or @BenAtreidesVing on Twitter if you'd like bounty commissions to upgrade this code, thank you!
+#
 #
 # Copyright 2022 Namesdao
 # Use permitted under the MIT Open Source License
