@@ -1,11 +1,11 @@
 # Namesdao-cli
-#  Sample imlementation of using the Namesdao secondary cache to resolve Namesdao names for sending XCH
-#   to a Namesdao .xch wallet
+# Sample imlementation of using the Namesdao secondary cache to resolve Namesdao names 
+# for sending XCH to a Namesdao .xch wallet
 #
 # Organization: Namedao, https://www.namesdao.org/
 #
-# Note: This is only a sample implementation using the secondary cache, which is not updated reliably. Wallets and Infrastructure Providers should
-# index the primary storage on the Chia Blockchain, per NDIP-0001
+# Note: This is only a sample implementation using the secondary cache, which is not updated reliably. 
+# Wallets and Infrastructure Providers should index the primary storage on the Chia Blockchain, per NDIP-0001
 #
 # TODOs:
 #  check with primary record (on chia blockchain) to confirm before sending
@@ -56,19 +56,19 @@ def sanitize_address(address):
 
 
 def sanitize_number(number):
-    '''Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. '''
+    """Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. """
     try:
         num = int(number)
-    except:
+    except Exception:
         return
     return number
 
 
 def sanitize_number12dec(number):
-    '''Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. '''
+    """Turn input that's supposed to be a (12 decimal digit) number into a number, or give error. """
     try:
         num = float(number)
-    except:
+    except Exception:
         return
     return f'{num:.12f}'
 
@@ -103,12 +103,10 @@ def resolve(name):
             else:
                 print('An error occurred while trying to resolve. Please try again.')
                 print(f'Error was: {err}')
-            return
         except URLError:
             retries -= 0
             if retries <= 0:
                 print('An error occurred while trying to resolve. Please check your network connection and try again.')
-                break
             else:
                 time.sleep(1)
             continue
@@ -179,10 +177,7 @@ def cmd_send():
 
     if options.Fee is not None:
         mojos = sanitize_number(options.Fee)
-        if mojos is None:
-            safe_fee = None
-        else:
-            safe_fee = str(int(mojos)*1e-12)
+        safe_fee = None if mojos is None else str(int(mojos)*1e-12)
     elif options.fee is not None:
         safe_fee = sanitize_number12dec(options.fee)
         if safe_fee is None:
@@ -216,20 +211,12 @@ def cmd_send():
         return
     #print (f'Sending to address {safe_address}')
 
-    if options.memo:
-        safe_memo = shlex.quote(options.memo)
-    else:
-        safe_memo = None
-
+    safe_memo = shlex.quote(options.memo) if options.memo else None
     if options.yes:
         cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
         return
 
-    if safe_memo:
-        memo_txt = f'a memo of "{safe_memo}" and'
-    else:
-        memo_txt = ''
-
+    memo_txt = f'a memo of "{safe_memo}" and' if safe_memo else ''
     print(
         "Welcome to Namesdao wallet send\n"
         "Namesdao, the Name Service for the Chia Blockchain\n"
@@ -295,17 +282,11 @@ def main():
     except IndexError:
         display_help()
         return
-
     try:
-        # see if we have a clear "send" or "resolve" command on the command line, if so proceed
-        cmd = cmd_dict[sys.argv[2]] # TODO test change of [1] to [2]
-    except KeyError:
+        cmd = cmd_dict[sys.argv[2]]
+    except (KeyError, IndexError):
         display_help()
         return
-    except IndexError:
-        display_help()
-        return
-    # call the send or resolve method
     cmd()
 
 
