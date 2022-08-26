@@ -84,11 +84,17 @@ def resolve(name):
     for suffix in suffixes:
         if name.endswith(suffix):
             name = name[:-len(suffix)]
+            break
 
     # This is the URL from which the resolving data will be downloaded.
-    url = f'https://storage1.xchstorage.cyou/names_lookup/{name}.json'
+    urls = [
+        f'https://namesdaolookup.xchstorage.com/{name}.json',
+        f'https://storage1.xchstorage.cyou/names_lookup/{name}.json',
+    ]
 
     retries = 3
+    url_idx = 0
+    url = urls[url_idx]
     while retries > 0:
         try:
             request = Request(
@@ -99,13 +105,18 @@ def resolve(name):
         except HTTPError as err:
             code = err.getcode()
             if code in (403, 404):
-                print('We don\'t currently have this address registered in our cache.')
+                url_idx += 1
+                if url_idx >= len(urls):
+                    print('We don\'t currently have this address registered in our cache.')
+                else:
+                    url = urls[url_idx]
+                    continue
             else:
                 print('An error occurred while trying to resolve. Please try again.')
                 print(f'Error was: {err}')
             return
         except URLError:
-            retries -= 0
+            retries -= 0 # TODO: subtract 1?
             if retries <= 0:
                 print('An error occurred while trying to resolve. Please check your network connection and try again.')
                 break
