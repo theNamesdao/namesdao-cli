@@ -47,6 +47,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 import subprocess
 import time
+import hashlib
 
 
 def sanitize_address(address):
@@ -164,6 +165,11 @@ def cmd_send():
         help='Additional memo for the transaction',
     )
     parser.add_option(
+        '-k', '--cloak',
+        action='store_true',
+        help='Convert memo to its sha256 hash',
+    )
+    parser.add_option(
         '-m', '--fee',
         help='Set the fees for the transaction, in XCH',
     )
@@ -184,9 +190,12 @@ def cmd_send():
         print('Please provide a name, e.g. hello.xch')
         display_help()
         return
-    address = resolve(name)
-    if address is None:
-        return
+    # TODO: Improve help message re name/address. And give better error message in case no name is provided.
+    address = sanitize_address(name)
+    if not address:
+        address = resolve(name)
+        if address is None:
+            return
 
     if options.Fee is not None:
         mojos = sanitize_number(options.Fee)
@@ -202,6 +211,7 @@ def cmd_send():
             mojos = str(int(float(safe_fee)*1e12))
     else:
         mojos = safe_fee = '0'
+
     if options.amount is None:
         safe_amount = '0.000000000001'
     else:
@@ -227,8 +237,16 @@ def cmd_send():
         return
     #print (f'Sending to address {safe_address}')
 
-    if options.memo:
-        safe_memo = shlex.quote(options.memo)
+    memo = options.memo
+
+    if memo and options.cloak:
+        orig_memo = memo
+        hash = hashlib.sha256()
+        hash.update(memo.encode('utf-8'))
+        safe_memo = hash.digest().hex()
+        print (f'Replaced {safe_memo} for {orig_memo}')
+    elif memo:
+        safe_memo = shlex.quote(memo)
     else:
         safe_memo = None
 
