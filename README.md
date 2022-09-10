@@ -27,6 +27,11 @@ Options:
 
 Only [Python 3](https://www.python.org/downloads/) is required.
 
+To use cloaked registrations, you will need to install GPG for Python.
+
+On Ubuntu: `sudo apt install python3-gpg`
+See [here](https://wiki.python.org/moin/GnuPrivacyGuard) for other operating systems.
+
 ## Troubleshooting
 
 You can fix the following warning message:
@@ -42,14 +47,9 @@ by running:
 $ pip3 install --upgrade requests
 ```
 
-## Cloaking
+## Cloaked registrations
 
 The `--cloak` flag encrypts the memo so that your name is protected from being seen by others before its registration is confirmed.
-
-Using this functionality requires you to install GPG for Python.
-
-* On Ubuntu: `sudo apt install python3-gpg`
-* See [here](https://wiki.python.org/moin/GnuPrivacyGuard) for other operating systems.
 
 ## License
 
