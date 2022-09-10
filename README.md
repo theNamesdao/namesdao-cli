@@ -9,12 +9,15 @@ Sample usage:
 $ python3 namesdao.py wallet send $address -a $amount -m $fee
 $ python3 namesdao.py wallet send hellobilly.xch -a 0.000000000001 -m 0.000000000002
 $ python3 namesdao.py wallet resolve $address
+$ python3 namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001
+$ python3 namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001 --cloak
 ```
 
 Options:
   - First argument is the address to send the XCH  [required]
   - `-a, --amount TEXT`               How much chia to send, in XCH  [required]
   - `-e, --memo TEXT`                 Additional memo for the transaction
+  - `-k, --cloak`                     Encrypt memo
   - `-m, --fee TEXT`                  Set the fees for the transaction, in XCH [required]
   - `-M, --Fee TEXT`                  Set the fees for the transaction, in mojos [takes precedence over --fee]
   - `-y, --yes`                       Execute without asking for confirmation
@@ -23,6 +26,11 @@ Options:
 ## Requirements
 
 Only [Python 3](https://www.python.org/downloads/) is required.
+
+To use cloaked registrations, you will need to install GPG for Python.
+
+On Ubuntu: `sudo apt install python3-gpg`
+See [here](https://wiki.python.org/moin/GnuPrivacyGuard) for other operating systems.
 
 ## Troubleshooting
 
@@ -38,6 +46,10 @@ by running:
 ```
 $ pip3 install --upgrade requests
 ```
+
+## Cloaked registrations
+
+The `--cloak` flag encrypts the memo so that your name is protected from being seen by others before its registration is confirmed.
 
 ## License
 
