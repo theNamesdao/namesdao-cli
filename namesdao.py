@@ -208,6 +208,7 @@ def encrypt(message):
         recipients=[recipient],
         plaintext=ptext,
         always_trust=True,
+        sign=False,
     )[0]
     return ctext.decode('utf-8')
 
