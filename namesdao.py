@@ -25,8 +25,8 @@
         python namesdao.py wallet send $address -a $amount -m $fee
         python namesdao.py wallet send hellobilly.xch -a 0.000000000001 -m 0.000000000002
         python namesdao.py wallet resolve $address
-        python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001
-        python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001 --cloak
+        python namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001
+        python namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
 
         Options:
           First argument is the address to send the XCH  [required]
@@ -496,8 +496,8 @@ def cmd_register():
     except ValueError:
         print('Please provide a name and a recipient address or name')
         print('Sample usage:')
-        print('python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001')
-        print('python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001 --cloak')
+        print('python namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001')
+        print('python namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001')
         return
 
     memo = f'{name}:{address}'
@@ -529,8 +529,8 @@ def display_help():
         "python namesdao.py wallet send $address -a $amount -m $fee\n"
         "python namesdao.py wallet send hellobilly.xch -a 0.000000000001 -m 0.000000000002\n"
         "python namesdao.py wallet resolve $address\n"
-        "python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001\n"
-        "python namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001 --cloak\n"
+        "python namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001\n"
+        "python namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001\n"
         "\n"
         "Options:\n"
         "  First argument is the address to send the XCH  [required]\n"

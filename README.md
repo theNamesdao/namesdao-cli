@@ -9,8 +9,8 @@ Sample usage:
 $ python3 namesdao.py wallet send $address -a $amount -m $fee
 $ python3 namesdao.py wallet send hellobilly.xch -a 0.000000000001 -m 0.000000000002
 $ python3 namesdao.py wallet resolve $address
-$ python3 namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001
-$ python3 namesdao.py name register nameToRegister.xch xchaddresstoregister -a 0.018 -m 0.0000000001 --cloak
+$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001
+$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
 ```
 
 Options:
