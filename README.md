@@ -1,16 +1,16 @@
 # Namesdao
 
-Send XCH to a Namesdao .xch name. Find out more at [Namesdao.org](https://www.namesdao.org).
+Register a Namesdao .xch name or send XCH to a Namesdao .xch name. Find out more at [Namesdao.org](https://www.namesdao.org).
 
 ## Usage
 
 Sample usage:
 ```sh
+$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
+$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001
 $ python3 namesdao.py wallet send $address -a $amount -m $fee
 $ python3 namesdao.py wallet send hellobilly.xch -a 0.000000000001 -m 0.000000000002
 $ python3 namesdao.py wallet resolve $address
-$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001
-$ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
 ```
 
 Options:
@@ -25,12 +25,22 @@ Options:
 
 ## Requirements
 
-Only [Python 3](https://www.python.org/downloads/) is required.
+[Python 3](https://www.python.org/downloads/) is required.
 
-To use cloaked registrations, you will need to install GPG for Python.
+To use cloaked registrations, you will need to install GPG for Python:
 
 On Ubuntu: `sudo apt install python3-gpg`
+
 See [here](https://wiki.python.org/moin/GnuPrivacyGuard) for other operating systems.
+
+
+## Cloaked registrations
+
+Cloaked registrations encrypt part of the request to prevent others from watching the name you request in the Chia mempool, and trying to
+register the name before you.
+
+The `--cloak` flag encrypts the memo so that your name is protected from being seen by others before its registration is confirmed.
+
 
 ## Troubleshooting
 
@@ -46,10 +56,6 @@ by running:
 ```
 $ pip3 install --upgrade requests
 ```
-
-## Cloaked registrations
-
-The `--cloak` flag encrypts the memo so that your name is protected from being seen by others before its registration is confirmed.
 
 ## License
 
