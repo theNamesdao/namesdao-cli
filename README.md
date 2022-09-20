@@ -38,12 +38,12 @@ On Ubuntu: `sudo apt install python3-gpg`
 See [here](https://wiki.python.org/moin/GnuPrivacyGuard) for other operating systems.
 
 
-## Cloaked registrations
+## Cloaked Registrations
 
 Cloaked registrations encrypt part of the request to prevent others from watching the name you request in the Chia mempool, and trying to
 register the name before you.
 
-The `--cloak` flag encrypts the memo so that your name is protected from being seen by others before its registration is confirmed.
+To use a cloaked registration, include `--cloak` in the command line of your "name register" command.
 
 
 ## Troubleshooting
