@@ -52,6 +52,7 @@ from urllib.parse import quote
 import subprocess
 import time
 import hashlib
+import os
 
 
 RECIPIENT_ADDRESS = 'xch1jhye8dmkhree0zr8t09rlzm9cc82mhuqtp5tlmsj4kuqvs69s2wsl90su4'
@@ -190,6 +191,8 @@ xN/Cf1Rc9TwzHmwEauuZU/GrxcOAgTvEPh2b+ICxiQOYaMl7iV51wpbEFH3U3trc
 evFFqsVLe8jB1LlsYrQJ
 =tDO1
 -----END PGP PUBLIC KEY BLOCK-----'''
+
+INCLUDE_SALT = True
 
 
 def encrypt(message):
@@ -367,6 +370,9 @@ def _cmd_send(name, address, options):
         hash = hashlib.sha256()
         #hash.update(memo.encode('utf-8'))
         #safe_memo = ':ioi:' + hash.digest().hex()
+        memo_bytes = memo.encode('utf-8')
+        if INCLUDE_SALT:
+            memo_bytes += b':' + os.urandom(20)
         encmemo = encrypt(memo.encode('utf-8'))
         safe_memo = ':register:' + quote(encmemo)
         print (f'Replaced {safe_memo} for {orig_memo}')
