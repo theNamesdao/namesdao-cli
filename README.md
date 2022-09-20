@@ -6,6 +6,8 @@ Register a Namesdao .xch name or send XCH to a Namesdao .xch name. Find out more
 
 Sample usage:
 ```sh
+$ python3 namesdao.py name register $name $destaddress --cloak -a 0.018
+$ python3 namesdao.py name register _nameToRegister.xch _MyExistingName.xch --cloak -a 0.018
 $ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
 $ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001
 $ python3 namesdao.py wallet send $address -a $amount -m $fee
@@ -14,14 +16,16 @@ $ python3 namesdao.py wallet resolve $address
 ```
 
 Options:
-  - First argument is the address to send the XCH  [required]
+  - $destaddress is a .xch name or a xch address that will receive the new registered name
+  - $name is a Namesdao .xch name
+  - $address is the .xch name or xch address to send the XCH to [required for wallet send]
   - `-a, --amount TEXT`               How much chia to send, in XCH  [required]
   - `-e, --memo TEXT`                 Additional memo for the transaction
-  - `-k, --cloak`                     Encrypt memo
-  - `-m, --fee TEXT`                  Set the fees for the transaction, in XCH [required]
+  - `-k, --cloak`                     Use a cloaked registration
+  - `-m, --fee TEXT`                  Set the fees for the transaction, in XCH (optional, default value 1 mojo)
   - `-M, --Fee TEXT`                  Set the fees for the transaction, in mojos [takes precedence over --fee]
   - `-y, --yes`                       Execute without asking for confirmation
-  - `-h, --help`                      Show this message and exit.
+  - `-h, --help`                      Show this message and exit
 
 ## Requirements
 
