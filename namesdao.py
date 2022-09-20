@@ -53,7 +53,7 @@ import subprocess
 import time
 import hashlib
 import os
-
+import base64
 
 RECIPIENT_ADDRESS = 'xch1jhye8dmkhree0zr8t09rlzm9cc82mhuqtp5tlmsj4kuqvs69s2wsl90su4'
 RECIPIENT_FINGERPRINT = '2A06D252B6B804C837E2BA2D2B3A61F48A54276C'
@@ -323,6 +323,7 @@ class _Options:
 
 
 def _cmd_send(name, address, options):
+    # This is a shared method for processing operations that require sending chia.
     if options.Fee is not None:
         mojos = sanitize_number(options.Fee)
         if mojos is None:
@@ -336,7 +337,7 @@ def _cmd_send(name, address, options):
         else:
             mojos = str(int(float(safe_fee)*1e12))
     else:
-        mojos = safe_fee = '0'
+        mojos = safe_fee = '1'
 
     if options.amount is None:
         safe_amount = '0.000000000001'
@@ -361,20 +362,18 @@ def _cmd_send(name, address, options):
     if safe_address is None:
         print('Sorry, we don\'t have an address for that name.')
         return
-    #print (f'Sending to address {safe_address}')
 
     memo = options.memo
 
     if memo and options.cloak:
+        # We encrypt the memo here if the cloak flag was set.
         orig_memo = memo
         hash = hashlib.sha256()
-        #hash.update(memo.encode('utf-8'))
-        #safe_memo = ':ioi:' + hash.digest().hex()
-        memo_bytes = memo.encode('utf-8')
+        memo_payload = memo.encode('utf-8')
         if INCLUDE_SALT:
-            memo_bytes += b':' + os.urandom(20)
-        #TODO memo_bytes not used; fix; add debug logging?
-        encmemo = encrypt(memo.encode('utf-8'))
+            # Here we append a secret to the memo_payload.
+            memo_payload += b':' + base64.b64encode(os.urandom(20))
+        encmemo = encrypt(memo_payload)
         safe_memo = ':register:' + quote(encmemo)
         print (f'Replaced {safe_memo} for {orig_memo}')
     elif memo:
