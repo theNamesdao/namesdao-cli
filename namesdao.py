@@ -192,28 +192,63 @@ evFFqsVLe8jB1LlsYrQJ
 =tDO1
 -----END PGP PUBLIC KEY BLOCK-----'''
 
+
 INCLUDE_SALT = True
 
 
 def encrypt(message):
+    '''Encrypt a message using gpg'''
+
     import io
     import gpg
 
     ptext = io.BytesIO(message)
     c = gpg.Context()
     c.armor = True
+
     try:
         recipient = c.get_key(RECIPIENT_FINGERPRINT)
     except gpg.errors.KeyNotFound:
         c.key_import(RECIPIENT_PUBKEY)
         recipient = c.get_key(RECIPIENT_FINGERPRINT)
+
     ctext = c.encrypt(
         recipients=[recipient],
         plaintext=ptext,
         always_trust=True,
         sign=False,
     )[0]
+
     return ctext.decode('utf-8')
+
+
+def verify(message, signature):
+    '''Verify a signature using gpg'''
+
+    import io
+    import gpg
+
+    c = gpg.Context()
+
+    try:
+        key = c.get_key(RECIPIENT_FINGERPRINT)
+    except gpg.errors.KeyNotFound:
+        c.key_import(RECIPIENT_PUBKEY)
+        key = c.get_key(RECIPIENT_FINGERPRINT)
+
+    message_buffer = io.BytesIO(message)
+    signature_buffer = io.BytesIO(signature)
+
+    try:
+        c.verify(
+            message_buffer,
+            signature=signature_buffer,
+            verify=[key],
+        )
+    except (gpg.errors.BadSignatures, gpg.errors.MissingSignatures):
+        return False
+
+    return True
 
 
 def sanitize_address(address):
@@ -258,10 +293,12 @@ def resolve(name):
         f'https://namesdaolookup.xchstorage.com/{name}.json',
         f'https://storage1.xchstorage.cyou/names_lookup/{name}.json',
     ]
+    signature_urls = [f'{u}.gpg' for u in urls]
 
     retries = 3
     url_idx = 0
     url = urls[url_idx]
+    signature_url = signature_urls[url_idx]
     while retries > 0:
         try:
             request = Request(
@@ -290,9 +327,36 @@ def resolve(name):
             else:
                 time.sleep(1)
             continue
+
+        # Now we try to download the signature file.
+        signature_response = None
+        try:
+            request = Request(
+                signature_url,
+                data=None,
+            )
+            signature_response = urlopen(request)
+        except HTTPError as err:
+            code = err.getcode()
+            if code in (403, 404):
+                #print('WARNING: No signature.')
+                pass
+            else:
+                print('An error occurred while trying to download the signature file. Please try again.')
+                print(f'Error was: {err}')
+        except URLError:
+            print('An error occurred while trying to download the signature file. Please check your network connection and try again.')
         break
 
-    data = json.loads(response.read().decode('utf-8'))
+    message = response.read()
+    data = json.loads(message.decode('utf-8'))
+    if signature_response:
+        signature = signature_response.read()
+        if verify(message, signature):
+            print('Verified signature')
+        else:
+            print('WARNING: Aborting due to invalid signature.')
+            return
     return data['address']
 
 def cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo):
@@ -337,7 +401,8 @@ def _cmd_send(name, address, options):
         else:
             mojos = str(int(float(safe_fee)*1e12))
     else:
-        mojos = safe_fee = '1'
+        safe_fee = '0.000000000001'
+        mojos = '1'
 
     if options.amount is None:
         safe_amount = '0.000000000001'
