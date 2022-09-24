@@ -63,4 +63,4 @@ $ pip3 install --upgrade requests
 
 ## License
 
-MIT Licence. See LICENSE for details.
+MIT License. See LICENSE for details.
