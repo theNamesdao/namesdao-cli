@@ -6,6 +6,7 @@ Register a Namesdao .xch name or send XCH to a Namesdao .xch name. Find out more
 
 Sample usage:
 ```sh
+$ python3 namesdao.py name register $name $destaddress
 $ python3 namesdao.py name register $name $destaddress --cloak -a 0.018
 $ python3 namesdao.py name register _nameToRegister.xch _MyExistingName.xch --cloak -a 0.018
 $ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
@@ -19,7 +20,7 @@ Options:
   - $destaddress is a .xch name or a xch address that will receive the new registered name
   - $name is a Namesdao .xch name
   - $address is the .xch name or xch address to send the XCH to [required for wallet send]
-  - `-a, --amount TEXT`               How much chia to send, in XCH  [required]
+  - `-a, --amount TEXT`               How much chia to send, in XCH [required for wallet send]. In the case of name register, if no amount is provided, then NAME tokens will be sent.
   - `-e, --memo TEXT`                 Additional memo for the transaction
   - `-k, --cloak`                     Use a cloaked registration
   - `-m, --fee TEXT`                  Set the fees for the transaction, in XCH (optional, default value 1 mojo)

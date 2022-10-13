@@ -20,6 +20,7 @@
 #  Usage:
 '''
         Sample usage:
+        $ python3 namesdao.py name register $name $destaddress
         $ python3 namesdao.py name register $name $destaddress --cloak
         $ python3 namesdao.py name register $name $destaddress --cloak -a 0.018
         $ python3 namesdao.py name register _nameToRegister.xch _MyExistingName.xch --cloak -a 0.018
