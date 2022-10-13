@@ -20,6 +20,7 @@
 #  Usage:
 '''
         Sample usage:
+        $ python3 namesdao.py name register $name $destaddress --cloak
         $ python3 namesdao.py name register $name $destaddress --cloak -a 0.018
         $ python3 namesdao.py name register _nameToRegister.xch _MyExistingName.xch --cloak -a 0.018
         $ python3 namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001
@@ -359,7 +360,7 @@ def resolve(name):
             return
     return data['address']
 
-def cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo):
+def cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo, use_name_tokens=False):
     cmd = [
         'chia',
         'wallet',
@@ -373,20 +374,58 @@ def cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo):
         '--override',
     ]
 
+    if use_name_tokens:
+        wallet_id = cmd_determine_name_wallet_id()
+        if not wallet_id:
+            print('Unable to determine NAME token wallet id. Please specify an amount with `-a <amount>` to send XCH.')
+            return
+        print('NAME token wallet id is', wallet_id.decode('utf-8'))
+        cmd.extend([
+            '-i',
+            wallet_id,
+        ])
+
     if safe_memo is not None:
         cmd.extend([
             '-e',
             safe_memo,
         ])
 
-    subprocess.run(cmd)
+    if use_name_tokens:
+        print('Automatically choosing active wallet...')
+        ps = subprocess.Popen(('echo'), stdout=subprocess.PIPE)
+        subprocess.run(cmd, stdin=ps.stdout)
+        ps.wait()
+    else:
+        subprocess.run(cmd)
+
+
+def cmd_determine_name_wallet_id():
+    '''Determine NAME wallet id from the Chia CLI
+
+    The wallet id is used to pay with NAME tokens when registering a name.
+    '''
+    cmd = [
+        'chia',
+        'wallet',
+        'show',
+        #'-f',
+        #fingerprint,
+    ]
+
+    ps = subprocess.Popen(('echo'), stdout=subprocess.PIPE)
+    out = subprocess.check_output(cmd, stdin=ps.stdout)
+    ps.wait()
+    #print('out=', out)
+    match = re.search(rb'-Asset ID:\s+4c4380af7d15c896d9e6266f322ac494c398803032eef56f2ab65877956d007f\n\s+-Wallet ID:\s+(\d+)', out)
+    return match.group(1)
 
 
 class _Options:
     pass
 
 
-def _cmd_send(name, address, options):
+def _cmd_send(name, address, options, name_token_amount=0):
     # This is a shared method for processing operations that require sending chia.
     if options.Fee is not None:
         mojos = sanitize_number(options.Fee)
@@ -404,7 +443,12 @@ def _cmd_send(name, address, options):
         safe_fee = '0.000000000001'
         mojos = '1'
 
-    if options.amount is None:
+    asset_name = 'XCH'
+    if name_token_amount:
+        # This means that NAME tokens will be sent instead of XCH.
+        safe_amount = name_token_amount
+        asset_name = 'NAME'
+    elif options.amount is None:
         safe_amount = '0.000000000001'
     else:
         safe_amount = sanitize_number12dec(options.amount)
@@ -447,7 +491,7 @@ def _cmd_send(name, address, options):
         safe_memo = None
 
     if options.yes:
-        cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
+        cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo, use_name_tokens=bool(name_token_amount))
         return
 
     if safe_memo:
@@ -463,11 +507,11 @@ def _cmd_send(name, address, options):
         #f"AIR token has asset id 824c71e37ac660006e03f7884561e7a124d930460ae1506a9c234c06ebc6aa1d"
         #f"and your current balance is: 10 AIR"
         "\n"
-        f"Please confirm, send {safe_amount} XCH to {name},\n"
+        f"Please confirm, send {safe_amount} {asset_name} to {name},\n"
         f"with {memo_txt} network transaction fee of {mojos} mojos? (Y/n)"
     )
     if input() in ('Y', 'Yes', 'yes', 'y'):
-        cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo)
+        cmd_send_after_confirmation(safe_address, safe_amount, safe_fee, safe_memo, use_name_tokens=bool(name_token_amount))
 
 
 def cmd_send():
@@ -541,7 +585,7 @@ def cmd_register():
     parser = OptionParser()
     parser.add_option(
         '-a', '--amount',
-        help='How much chia to send, in XCH [required]',
+        help='How much chia to send, in XCH. If no amount is provided, then NAME tokens will be sent',
     )
     parser.add_option(
         '-k', '--cloak',
@@ -567,6 +611,7 @@ def cmd_register():
     except ValueError:
         print('Please provide a name and a recipient address or name')
         print('Sample usage:')
+        print('python namesdao.py name register nameToRegister.xch xchaddresstoregister -m 0.0000000001')
         print('python namesdao.py name register ___nameToRegister.xch xchaddresstoregister -a 0.000000000001 -m 0.0000000001')
         print('python namesdao.py name register ___nameToRegister.xch xchaddresstoregister --cloak -a 0.000000000001 -m 0.0000000001')
         return
@@ -579,7 +624,24 @@ def cmd_register():
     opts.amount = options.amount
     opts.fee = options.fee
     opts.Fee = options.Fee
+
+    if not options.amount:
+        fee=get_name_token_fee(name)
+        if fee:
+            _cmd_send('namesdao.xch', RECIPIENT_ADDRESS, opts, name_token_amount=fee)
+            return
+
     _cmd_send('namesdao.xch', RECIPIENT_ADDRESS, opts)
+
+
+def get_name_token_fee(name):
+    if name.startswith("___"): # three underscores, free tier
+        return
+
+    if name.startswith("_"):
+        return '0.5'
+
+    return '5'
 
 
 # Used to point to the method to process the command
@@ -605,7 +667,7 @@ def display_help():
         "\n"
         "Options:\n"
         "  First argument is the address to send the XCH  [required]\n"
-        "  -a, --amount TEXT               How much chia to send, in XCH  [required]\n"
+        "  -a, --amount TEXT               How much chia to send, in XCH\n"
         "  -e, --memo TEXT                 Additional memo for the transaction\n"
         "  -k, --cloak                     Encrypt memo\n"
         "  -m, --fee TEXT                  Set the fees for the transaction, in XCH\n"
